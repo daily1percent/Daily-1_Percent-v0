@@ -1,0 +1,16 @@
+{
+  "name": "Daily 1 Percent",
+  "short_name": "D1P",
+  "description": "Mental resilience app for athletes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1E1E1E",
+  "theme_color": "#1E1E1E",
+  "icons": [
+    {
+      "src": "/images/d1p-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
