@@ -77,8 +77,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Update the signUp function in the AuthProvider component
+
   const signUp = async (email: string, password: string, username: string) => {
     try {
+      // Sign up the user with Supabase
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -87,20 +90,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       })
 
-      if (!error && data.user) {
-        // Create profile
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: data.user.id,
-          username,
-          role: localStorage.getItem("userRole") || null,
-          age_group: localStorage.getItem("userAge") || null,
-        })
+      if (error) {
+        console.error("Supabase auth error:", error)
+        return { error }
+      }
 
+      if (!data.user) {
+        console.error("No user returned from signUp")
+        return { error: new Error("Failed to create user account") }
+      }
+
+      // Create profile
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: data.user.id,
+        username,
+        role: localStorage.getItem("userRole") || null,
+        age_group: localStorage.getItem("userAge") || null,
+      })
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError)
         return { error: profileError }
       }
 
-      return { error }
+      return { error: null }
     } catch (error) {
+      console.error("Unexpected error during signup:", error)
       return { error }
     }
   }

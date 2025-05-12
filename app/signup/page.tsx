@@ -5,11 +5,11 @@ import type React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { getSupabase } from "@/lib/supabase"
 
 export default function SignupPage() {
   const router = useRouter()
-  const { signUp } = useAuth()
+  const supabase = getSupabase()
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -38,17 +38,41 @@ export default function SignupPage() {
 
     try {
       // Sign up the user with Supabase
-      const { error: signUpError } = await signUp(formData.email, formData.password, formData.username)
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: { username: formData.username },
+        },
+      })
 
       if (signUpError) {
+        console.error("Auth error:", signUpError)
         throw signUpError
+      }
+
+      if (!data.user) {
+        throw new Error("Failed to create user account")
+      }
+
+      // Create profile
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: data.user.id,
+        username: formData.username,
+        role: localStorage.getItem("userRole") || null,
+        age_group: localStorage.getItem("userAge") || null,
+      })
+
+      if (profileError) {
+        console.error("Profile error:", profileError)
+        throw profileError
       }
 
       // Navigate to the welcome screen
       router.push("/welcome")
     } catch (err: any) {
       console.error("Error during signup:", err)
-      setError(err.message || "An error occurred during signup")
+      setError(err.message || err.error_description || "An error occurred during signup. Please try again.")
     } finally {
       setLoading(false)
     }

@@ -5,11 +5,11 @@ import type React from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { getSupabase } from "@/lib/supabase"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { signIn } = useAuth()
+  const supabase = getSupabase()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -29,9 +29,13 @@ export default function LoginPage() {
 
     try {
       // Sign in the user with Supabase
-      const { error: signInError } = await signIn(formData.email, formData.password)
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
 
       if (signInError) {
+        console.error("Login error:", signInError)
         throw signInError
       }
 
@@ -39,7 +43,7 @@ export default function LoginPage() {
       router.push("/dashboard")
     } catch (err: any) {
       console.error("Error during login:", err)
-      setError(err.message || "Invalid email or password")
+      setError(err.message || err.error_description || "Invalid email or password")
     } finally {
       setLoading(false)
     }
