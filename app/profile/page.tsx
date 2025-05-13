@@ -1,23 +1,82 @@
 "use client"
-import { useState } from "react"
+
 import type React from "react"
 
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ChevronLeft, Save, LogOut } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { createClient } from "@supabase/supabase-js"
 
 export default function ProfilePage() {
-  const { profile, updateProfile, signOut } = useAuth()
   const router = useRouter()
+  const [profile, setProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState({
-    username: profile?.username || "",
-    role: profile?.role || "",
-    age_group: profile?.age_group || "",
+    username: "",
+    role: "",
+    age_group: "",
   })
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [updateLoading, setUpdateLoading] = useState(false)
+
+  // Create Supabase client directly
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+  useEffect(() => {
+    // Check if user is logged in and fetch profile
+    const fetchUserAndProfile = async () => {
+      setLoading(true)
+
+      try {
+        // Get current session
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+
+        if (sessionError || !sessionData.session) {
+          router.push("/login")
+          return
+        }
+
+        const userId = sessionData.session.user.id
+
+        // Fetch profile data
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single()
+
+        if (profileError && !profileError.message.includes("No rows found")) {
+          console.error("Error fetching profile:", profileError)
+          setError("Failed to load profile data")
+        }
+
+        if (profileData) {
+          setProfile(profileData)
+          setFormData({
+            username: profileData.username || "",
+            role: profileData.role || "",
+            age_group: profileData.age_group || "",
+          })
+        } else {
+          // If no profile exists, use user metadata
+          setFormData({
+            username: sessionData.session.user.user_metadata?.username || "",
+            role: sessionData.session.user.user_metadata?.role || "",
+            age_group: sessionData.session.user.user_metadata?.age_group || "",
+          })
+        }
+      } catch (err: any) {
+        console.error("Unexpected error:", err)
+        setError("An unexpected error occurred")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserAndProfile()
+  }, [router, supabase])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -28,13 +87,25 @@ export default function ProfilePage() {
     e.preventDefault()
     setError("")
     setSuccess("")
-    setLoading(true)
+    setUpdateLoading(true)
 
     try {
-      const { error: updateError } = await updateProfile({
+      // Get current session
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError || !sessionData.session) {
+        throw new Error("You must be logged in to update your profile")
+      }
+
+      const userId = sessionData.session.user.id
+
+      // Update profile
+      const { error: updateError } = await supabase.from("profiles").upsert({
+        id: userId,
         username: formData.username,
         role: formData.role,
         age_group: formData.age_group,
+        updated_at: new Date().toISOString(),
       })
 
       if (updateError) {
@@ -46,12 +117,23 @@ export default function ProfilePage() {
       console.error("Error updating profile:", err)
       setError(err.message || "An error occurred while updating your profile")
     } finally {
-      setLoading(false)
+      setUpdateLoading(false)
     }
   }
 
   const handleLogout = async () => {
-    await signOut()
+    await supabase.auth.signOut()
+    router.push("/")
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen px-6 bg-[#1E1E1E] text-white">
+        <div className="flex items-center justify-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -126,9 +208,9 @@ export default function ProfilePage() {
         <button
           type="submit"
           className="w-full py-3.5 px-4 rounded-full bg-[#1F7CF6] text-white font-medium mt-6 flex items-center justify-center"
-          disabled={loading}
+          disabled={updateLoading}
         >
-          {loading ? (
+          {updateLoading ? (
             "Saving..."
           ) : (
             <>
