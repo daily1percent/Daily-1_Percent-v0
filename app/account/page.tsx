@@ -2,13 +2,38 @@
 
 import Link from "next/link"
 import { Home, Calendar, Compass, User, Settings, LogOut, ChevronRight } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useEffect, useState } from "react"
+import { createClient } from "@supabase/supabase-js"
+import { useRouter } from "next/navigation"
 
 export default function AccountPage() {
-  const { profile, signOut } = useAuth()
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Create Supabase client directly
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkUser = async () => {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (error || !data.session) {
+        router.push("/login")
+        return
+      }
+
+      setUser(data.session.user)
+      setLoading(false)
+    }
+
+    checkUser()
+  }, [router, supabase.auth])
 
   const handleLogout = async () => {
-    await signOut()
+    await supabase.auth.signOut()
+    router.push("/")
   }
 
   return (
@@ -39,11 +64,11 @@ export default function AccountPage() {
       <div className="px-6 mt-6">
         <div className="bg-[#2A2A2A] rounded-lg p-4 flex items-center">
           <div className="w-12 h-12 rounded-full bg-[#3A3A3A] flex items-center justify-center text-xl font-bold">
-            {profile?.username?.charAt(0).toUpperCase() || "U"}
+            {user?.user_metadata?.username?.charAt(0).toUpperCase() || "U"}
           </div>
           <div className="ml-4">
-            <h2 className="font-medium">{profile?.username || "User"}</h2>
-            <p className="text-sm text-gray-400">{profile?.role || "No role set"}</p>
+            <h2 className="font-medium">{user?.user_metadata?.username || "User"}</h2>
+            <p className="text-sm text-gray-400">{user?.user_metadata?.role || "Athlete"}</p>
           </div>
         </div>
       </div>

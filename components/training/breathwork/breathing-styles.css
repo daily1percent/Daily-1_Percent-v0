@@ -1,0 +1,64 @@
+/* Base circle styles */
+.breathing-circle {
+  border-radius: 50%;
+  transition: transform 0.5s ease-in-out, background-color 0.5s ease-in-out;
+  width: 320px; /* 160px radius × 2 */
+  height: 320px; /* 160px radius × 2 */
+  transform-origin: center;
+}
+
+/* Animation classes for each breath state */
+.circle-inhale {
+  animation: inhale 5s ease-in-out forwards;
+}
+
+.circle-exhale {
+  animation: exhale 5s ease-in-out forwards;
+}
+
+.circle-hold-big {
+  transform: scale(1); /* Full size (160px radius) */
+}
+
+.circle-hold-small {
+  transform: scale(0.5); /* Half size (80px radius) */
+}
+
+/* Animation keyframes */
+@keyframes inhale {
+  0% {
+    transform: scale(0.5); /* Start at 80px radius (half of max) */
+  }
+  100% {
+    transform: scale(1); /* End at 160px radius (full size) */
+  }
+}
+
+@keyframes exhale {
+  0% {
+    transform: scale(1); /* Start at 160px radius (full size) */
+  }
+  100% {
+    transform: scale(0.5); /* End at 80px radius (half of max) */
+  }
+}
+
+/* Pause animation when needed */
+.animation-paused {
+  animation-play-state: paused !important;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 640px) {
+  .breathing-circle {
+    width: 280px;
+    height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breathing-circle {
+    width: 240px;
+    height: 240px;
+  }
+}

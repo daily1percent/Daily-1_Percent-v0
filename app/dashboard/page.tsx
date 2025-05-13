@@ -2,10 +2,34 @@
 
 import Link from "next/link"
 import { Home, Calendar, Compass, User } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import { useEffect, useState } from "react"
+import { createClient } from "@supabase/supabase-js"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
-  const { profile, isLoading } = useAuth()
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Create Supabase client directly
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkUser = async () => {
+      const { data, error } = await supabase.auth.getSession()
+
+      if (error || !data.session) {
+        router.push("/login")
+        return
+      }
+
+      setUser(data.session.user)
+      setLoading(false)
+    }
+
+    checkUser()
+  }, [router, supabase.auth])
 
   return (
     <div className="flex flex-col min-h-screen bg-[#1E1E1E] text-white pb-16">
@@ -28,10 +52,10 @@ export default function DashboardPage() {
         </div>
 
         <h1 className="text-2xl font-medium mt-6">
-          {isLoading ? (
+          {loading ? (
             <div className="h-8 w-48 bg-gray-700 animate-pulse rounded"></div>
-          ) : profile?.username ? (
-            `Welcome back, ${profile.username}`
+          ) : user?.user_metadata?.username ? (
+            `Welcome back, ${user.user_metadata.username}`
           ) : (
             "Welcome back"
           )}
@@ -52,9 +76,11 @@ export default function DashboardPage() {
             <div className="text-sm">Mantra Work</div>
           </div>
 
-          <button className="w-full bg-[#1F7CF6] text-white py-3 px-4 rounded-full font-medium text-sm">
-            Start Todays 14-Min Training
-          </button>
+          <Link href="/breathwork" className="block w-full">
+            <button className="w-full py-3 px-4 rounded-full bg-[#1F7CF6] text-white font-medium">
+              Start Today's 14-Min Training
+            </button>
+          </Link>
         </div>
       </div>
 
@@ -78,22 +104,7 @@ export default function DashboardPage() {
           <h2 className="text-xl font-medium mb-1">Upload Video</h2>
           <p className="text-sm text-gray-400 mb-3">See your best self in motion</p>
 
-          <button className="w-full border border-[#1F7CF6] text-[#1F7CF6] py-2.5 px-4 rounded-full font-medium text-sm">
-            Upload Video
-          </button>
-        </div>
-      </div>
-
-      {/* Explore */}
-      <div className="px-6 mt-4">
-        <div className="bg-[#2A2A2A] rounded-lg p-4">
-          <h2 className="text-xl font-medium mb-3">Explore</h2>
-
-          <div className="space-y-3">
-            <div className="text-sm">Add a Sport/Position</div>
-            <div className="text-sm">Pick a New Visualization Series</div>
-            <div className="text-sm">Breathwork Menu</div>
-          </div>
+          <button className="w-full py-3 px-4 rounded-full bg-[#3A3A3A] text-white font-medium">Upload Video</button>
         </div>
       </div>
 

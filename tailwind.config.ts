@@ -39,6 +39,10 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Custom colors for breathwork
+        inhale: "#00C853",
+        hold: "#A020F0",
+        exhale: "#FF9100",
       },
       borderRadius: {
         lg: "var(--radius)",

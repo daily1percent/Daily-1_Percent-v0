@@ -24,6 +24,13 @@ export const getSupabase = () => {
         persistSession: true,
         autoRefreshToken: true,
       },
+      // Add debug logging
+      global: {
+        fetch: (...args) => {
+          console.log("Supabase fetch:", args[0])
+          return fetch(...args)
+        },
+      },
     })
   }
   return (

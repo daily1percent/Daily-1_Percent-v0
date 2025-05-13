@@ -14,21 +14,8 @@ export default function AgeSelectionPage() {
     // Store the selected age
     localStorage.setItem("userAge", age)
 
-    // Route based on age and role
-    const userRole = localStorage.getItem("userRole") || "Athlete"
-
-    // Branching logic based on role and age
-    if (userRole === "Athlete") {
-      if (age === "Under 12") {
-        router.push("/parent-permission")
-      } else {
-        router.push("/signup")
-      }
-    } else if (userRole === "Coach or Trainer") {
-      router.push("/signup")
-    } else {
-      router.push("/signup")
-    }
+    // For simplicity, just go to signup for all ages
+    router.push("/signup")
   }
 
   return (
@@ -41,24 +28,16 @@ export default function AgeSelectionPage() {
         </Link>
       </div>
 
-      {/* Centered Logo and Wordmark - STACKED as per Figma design */}
-      <div className="flex flex-col items-center mt-8">
-        {/* Logo Icon - Exact size from Figma */}
-        <img src="/images/d1p-icon.png" alt="Daily 1 Percent Logo" className="w-[124px] h-[112px] object-contain" />
-
-        {/* Wordmark - 24px below logo */}
-        <div className="mt-6 flex items-center">
-          <span className="text-white text-xl font-normal">DAILY</span>
-          <span className="text-[#F6861F] text-xl font-normal mx-1">1</span>
-          <span className="text-white text-xl font-normal">PERCENT</span>
-        </div>
+      {/* Header with Logo and Wordmark */}
+      <div className="flex items-center mt-6">
+        <span className="text-[#F6861F] text-lg font-medium mr-2">DAILY 1 PERCENT</span>
       </div>
 
-      {/* Main Question - 48px below wordmark */}
-      <h1 className="text-[22px] font-normal mt-12 text-center">How old are you?</h1>
+      {/* Main Question */}
+      <h1 className="text-[22px] font-normal mt-12">How old are you?</h1>
 
-      {/* Age Selection Buttons - 32px below question, 16px spacing between buttons */}
-      <div className="mt-8 space-y-4 w-[85%] mx-auto">
+      {/* Age Selection Buttons */}
+      <div className="mt-8 space-y-4 w-full">
         {ageGroups.map((age) => (
           <button
             key={age}

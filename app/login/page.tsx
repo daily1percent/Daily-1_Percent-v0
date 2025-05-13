@@ -1,21 +1,22 @@
 "use client"
 import { useState } from "react"
 import type React from "react"
-
-import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
-import { getSupabase } from "@/lib/supabase"
+import { ChevronLeft, AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { createClient } from "@supabase/supabase-js"
 
 export default function LoginPage() {
   const router = useRouter()
-  const supabase = getSupabase()
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Create Supabase client directly
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -28,22 +29,21 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Sign in the user with Supabase
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      // Simple direct login
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
 
-      if (signInError) {
-        console.error("Login error:", signInError)
-        throw signInError
+      if (error) {
+        throw error
       }
 
-      // Navigate to the dashboard
+      // If login was successful, redirect to dashboard
       router.push("/dashboard")
     } catch (err: any) {
       console.error("Error during login:", err)
-      setError(err.message || err.error_description || "Invalid email or password")
+      setError(err.message || "Invalid email or password. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -94,7 +94,12 @@ export default function LoginPage() {
           />
         </div>
 
-        {error && <p className="text-red-500">{error}</p>}
+        {error && (
+          <div className="p-3 bg-red-900/50 rounded-lg flex items-start">
+            <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
 
         <button
           type="submit"
@@ -105,9 +110,12 @@ export default function LoginPage() {
         </button>
 
         <div className="text-center mt-4">
-          <Link href="/forgot-password" className="text-[#1F7CF6] text-sm">
-            Forgot Password?
-          </Link>
+          <p className="text-gray-400">
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-[#1F7CF6]">
+              Sign up
+            </Link>
+          </p>
         </div>
       </form>
     </div>

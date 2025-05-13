@@ -20,7 +20,7 @@ export default function RoleSelectionPage() {
   const handleRoleSelect = (role: string) => {
     // Store the selected role
     localStorage.setItem("userRole", role)
-    // Immediately navigate to age selection
+    // Navigate to age selection
     router.push("/age-selection")
   }
 
@@ -34,28 +34,20 @@ export default function RoleSelectionPage() {
         </Link>
       </div>
 
-      {/* Centered Logo and Wordmark - STACKED as per Figma design */}
-      <div className="flex flex-col items-center mt-8">
-        {/* Logo Icon - Exact size from Figma */}
-        <img src="/images/d1p-icon.png" alt="Daily 1 Percent Logo" className="w-[124px] h-[112px] object-contain" />
-
-        {/* Wordmark - 24px below logo */}
-        <div className="mt-6 flex items-center">
-          <span className="text-white text-xl font-normal">DAILY</span>
-          <span className="text-[#F6861F] text-xl font-normal mx-1">1</span>
-          <span className="text-white text-xl font-normal">PERCENT</span>
-        </div>
+      {/* Header with Logo and Wordmark */}
+      <div className="flex items-center mt-6">
+        <span className="text-[#F6861F] text-lg font-medium mr-2">DAILY 1 PERCENT</span>
       </div>
 
-      {/* Main Question - 48px below wordmark */}
-      <h1 className="text-[22px] font-normal mt-12 text-center">
+      {/* Main Question */}
+      <h1 className="text-[22px] font-normal mt-12">
         What best describes your
         <br />
         role?
       </h1>
 
-      {/* Role Selection Buttons - 32px below question, 16px spacing between buttons */}
-      <div className="mt-8 space-y-4 w-[85%] mx-auto">
+      {/* Role Selection Buttons */}
+      <div className="mt-8 space-y-4 w-full">
         {roles.map((role) => (
           <button
             key={role}

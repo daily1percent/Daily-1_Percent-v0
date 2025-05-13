@@ -1,0 +1,43 @@
+.bubble-inhale {
+  animation: grow 5s ease-in-out;
+}
+
+.bubble-exhale {
+  animation: shrink 5s ease-in-out;
+}
+
+.bubble-hold {
+  animation: pulse 5s ease-in-out;
+}
+
+@keyframes grow {
+  0% {
+    transform: scale(0.75);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shrink {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0.75);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.paused {
+  animation-play-state: paused;
+}
